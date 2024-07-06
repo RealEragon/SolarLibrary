@@ -57,6 +57,7 @@ function Navigator() {
         <Route exact path="/libraries" element={<Libraries />}></Route>
         <Route exact path="/my-libraries" element={<MyLibraries />}></Route>
         <Route exact path="/autorization" element={<Authorization />}></Route>
+        <Route exact path="/profile" element={<Profile />}></Route>
       </Routes>
     </Router>
   );
