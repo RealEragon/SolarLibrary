@@ -56,13 +56,21 @@ const Authorization = () => {
         });
     } else {
       fetch(`http://127.0.0.1:5161/api/user/login?email=${email}&password=${password}`)
-        .then(response => response.json())
+        .then(response => {
+          if (response.ok) {
+            return response.json();
+          } else if (response.status == 404) {
+            throw new Error("Пользователь не найден");
+          } else {
+            throw new Error("Ошибка при авторизации");
+          }
+        })
         .then(data => {
           login(data);
           navigate('/profile');
         })
         .catch(error => {
-          setErrorMessage("Ошибка при авторизации");
+          setErrorMessage(error.message);
         });
     }
   };

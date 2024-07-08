@@ -19,16 +19,8 @@ namespace api.Models
         public string? ContentType { get; set; } // Тип содержимого файла (например, image/jpeg, application/pdf)
         public byte[]? Data { get; set; } // Байтовое представление файла
         public DateTime UploadDate { get; set; } // Дата загрузки файла
-
-        [Required]
-        public int CategoryId { get; set; }
-
         [Required]
         public int LibraryId { get; set; }
-
-        [ForeignKey("CategoryId")]
-        public Category? Category { get; set; }
-
         [ForeignKey("LibraryId")]
         public Library? Library { get; set; }
     }

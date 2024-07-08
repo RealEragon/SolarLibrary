@@ -81,9 +81,6 @@ namespace api.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("int");
-
                     b.Property<string>("ContentType")
                         .HasColumnType("longtext");
 
@@ -106,8 +103,6 @@ namespace api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId");
-
                     b.HasIndex("LibraryId");
 
                     b.ToTable("Documents");
@@ -121,7 +116,7 @@ namespace api.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ActivityId")
+                    b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
@@ -131,12 +126,19 @@ namespace api.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<bool>("IsPublic")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ActivityId");
+                    b.HasIndex("CategoryId");
 
                     b.HasIndex("UserId");
 
@@ -205,28 +207,20 @@ namespace api.Migrations
 
             modelBuilder.Entity("api.Models.Document", b =>
                 {
-                    b.HasOne("api.Models.Category", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("api.Models.Library", "Library")
                         .WithMany()
                         .HasForeignKey("LibraryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Category");
-
                     b.Navigation("Library");
                 });
 
             modelBuilder.Entity("api.Models.Library", b =>
                 {
-                    b.HasOne("api.Models.Activity", "Activity")
+                    b.HasOne("api.Models.Category", "Category")
                         .WithMany()
-                        .HasForeignKey("ActivityId")
+                        .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -236,7 +230,7 @@ namespace api.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Activity");
+                    b.Navigation("Category");
 
                     b.Navigation("User");
                 });

@@ -11,16 +11,19 @@ namespace api.Models
     {
         public int Id { get; set; }
         public DateTime CreatedDate { get; set; }
+        [Required]
+        public string? Name { get; set; }
         public string Description { get; set; } = string.Empty;
+        [Required]
+        public bool IsPublic { get; set; }
         [Required]
         public int UserId { get; set; }
         [Required]
-        public int ActivityId { get; set; }
+        public int CategoryId { get; set; }
 
          [ForeignKey("UserId")]
         public User? User { get; set; }
-
-         [ForeignKey("ActivityId")]
-        public Activity? Activity { get; set; }
+        [ForeignKey("CategoryId")]
+        public Category? Category { get; set; }
     }
 }
