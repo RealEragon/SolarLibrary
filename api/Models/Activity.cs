@@ -7,19 +7,26 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace api.Models
 {
-    public class User
+    public class Activity
     {
         [Key]
         public int Id { get; set; }
+
         [Required]
-        public string? Nickname { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string Surame { get; set; } = string.Empty;
-        public string SecondName { get; set; } = string.Empty;
+        public string? Name { get; set; }
+
         public string Description { get; set; } = string.Empty;
+
         [Required]
-        public string? Email { get; set; }
+        public int UserId { get; set; }
+
         [Required]
-        public string? Password { get; set; }
+        public int LibraryId { get; set; }
+
+        [ForeignKey("UserId")]
+        public User? User { get; set; }
+
+        [ForeignKey("LibraryId")]
+        public Library? Library { get; set; }
     }
 }

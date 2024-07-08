@@ -22,7 +22,7 @@ namespace api.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            var users = _context.User.ToList()
+            var users = _context.Users.ToList()
              .Select(s => s.ToUserDto());
             
             return Ok(users);
@@ -31,7 +31,7 @@ namespace api.Controllers
         [HttpGet("{id}")]
         public IActionResult GetById([FromRoute] int id)
         {
-            var user = _context.User.Find(id);
+            var user = _context.Users.Find(id);
 
             if (user == null)
             {
@@ -43,7 +43,7 @@ namespace api.Controllers
         [HttpGet("login")]
         public IActionResult Login([FromQuery] string email, [FromQuery] string password)
         {
-            var user = _context.User.FirstOrDefault(u => u.Email == email && u.Password == password);
+            var user = _context.Users.FirstOrDefault(u => u.Email == email && u.Password == password);
 
             if (user == null)
             {
@@ -54,14 +54,14 @@ namespace api.Controllers
         [HttpPost]
         public IActionResult Create([FromBody] CreateUserRequestDto userDto)
         {
-            var existingUser = _context.User.FirstOrDefault(u => u.Email == userDto.Email);
+            var existingUser = _context.Users.FirstOrDefault(u => u.Email == userDto.Email);
             if (existingUser != null)
             {
                 return Conflict("User with the same email or username already exists");
             }
 
             var userModel = userDto.ToUserFromCreateDTO();
-            _context.User.Add(userModel);
+            _context.Users.Add(userModel);
             _context.SaveChanges();
             return CreatedAtAction(nameof(GetById), new { id = userModel.Id }, userModel.ToUserDto());
         }
