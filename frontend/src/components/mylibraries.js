@@ -45,6 +45,12 @@ const MyLibraries = () => {
     navigate('/autorization');
   };
 
+  const handleLibraryClick = (libraryId) => {
+    console.log(`Нажата библиотека с ID: ${libraryId}`);
+    navigate(`/library/${libraryId}`); // Переход на страницу `/library` с переданным ID библиотеки
+    // Здесь вы можете выполнить необходимые действия, например, перенаправление на другую страницу с использованием navigate()
+  };
+
   return (
     <>
       {!isAuthenticated && isAuthChecked && (
@@ -75,7 +81,12 @@ const MyLibraries = () => {
         </thead>
         <tbody>
           {libraries.map((item) => (
-            <tr key={item.id} className="border-b">
+            <tr
+            key={item.id}
+            className="border-b"
+            onClick={() => handleLibraryClick(item.id)}
+            style={{ cursor: 'pointer' }}
+            >
               <td className="px-4 py-2 border">
                 <div className="flex items-center">
                   <AiFillFolder className="text-gray-500 mr-2" />

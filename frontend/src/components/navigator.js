@@ -6,6 +6,7 @@ import MyLibraries from "./mylibraries.js";
 import Profile from "./profile.js";
 import Authorization from "./autorization.js";
 import { CgProfile } from "react-icons/cg";
+import ShowLibrary from "./ShowLibrary.js";
 
 function Navigator() {
   return (
@@ -58,6 +59,7 @@ function Navigator() {
         <Route exact path="/my-libraries" element={<MyLibraries />}></Route>
         <Route exact path="/autorization" element={<Authorization />}></Route>
         <Route exact path="/profile" element={<Profile />}></Route>
+        <Route exact path="/library/:libraryId" element={<ShowLibrary />}></Route>
       </Routes>
     </Router>
   );
