@@ -7,6 +7,7 @@ const MyLibraries = () => {
   const { userData, isAuthenticated } = useContext(AuthContext);
   const [isAuthChecked, setIsAuthChecked] = useState(false);
   const [libraries, setLibraries] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const navigate = useNavigate();
@@ -27,6 +28,18 @@ const MyLibraries = () => {
 
     setIsAuthChecked(true);
   }, [userData]);
+
+  useEffect(() => {
+    fetch(`http://127.0.0.1:5161/api/category`)
+      .then((response) => response.json())
+      .then((data) => {
+        setCategories(data);
+        console.log(data)
+      })
+      .catch((error) => {
+        console.log('Ошибка при получении данных');
+      });
+  }, [])
 
   const handleLogin = () => {
     navigate('/autorization');
@@ -69,7 +82,9 @@ const MyLibraries = () => {
                   <span className="font-medium">{item.name}</span>
                 </div>
               </td>
-              <td className="px-4 py-2 border">{item.description}</td>
+              <td className="px-4 py-2 border">
+                {categories.find(category => category.id === item.categoryId)?.name || 'Нет категории'}
+              </td>
               <td className="px-4 py-2 border">
                 {new Date(item.createdDate).toLocaleString()}
               </td>
