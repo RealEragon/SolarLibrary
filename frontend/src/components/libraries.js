@@ -29,7 +29,6 @@ const Libraries = () => {
       .then((response) => response.json())
       .then((data) => {
         setCategories(data);
-        console.log(data)
       })
       .catch((error) => {
         console.log('Ошибка при получении данных');

@@ -46,9 +46,7 @@ const MyLibraries = () => {
   };
 
   const handleLibraryClick = (libraryId) => {
-    console.log(`Нажата библиотека с ID: ${libraryId}`);
-    navigate(`/library/${libraryId}`); // Переход на страницу `/library` с переданным ID библиотеки
-    // Здесь вы можете выполнить необходимые действия, например, перенаправление на другую страницу с использованием navigate()
+    navigate(`/library/${libraryId}`);
   };
 
   return (
