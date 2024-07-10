@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FaFile, FaDownload } from "react-icons/fa";
+import { AuthContext } from "./AuthContext";
 import axios from "axios";
 
 const ShowLibrary = () => {
@@ -10,9 +11,10 @@ const ShowLibrary = () => {
   const [documents, setDocuments] = useState([]);
   const [library, setLibrary] = useState([]);
 
-  const [selectedDocument, setSelectedDocument] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+
+  const { userData } = useContext(AuthContext);
 
   const navigate = useNavigate();
 
@@ -44,14 +46,6 @@ const ShowLibrary = () => {
 
   const handleUploadFile = () => {
     setShowModal(true);
-  };
-
-  const handleDocumentClick = (document) => {
-    setSelectedDocument(document);
-  };
-
-  const closePopup = () => {
-    setSelectedDocument(null);
   };
 
   const closeModal = () => {
@@ -116,10 +110,13 @@ const ShowLibrary = () => {
       console.log('Ошибка при скачивании файла:', error);
     }
   };
-
+  
+  if (isLoading) {
+    return <div>Загрузка...</div>;
+  }
   return (
     <div className="p-4">
-      <h2 className="text-2xl font-bold mb-4">Документы библиотеки {libraryId}</h2>
+      <h2 className="text-2xl font-bold mb-4">Документы библиотеки {library.name}</h2>
 
       {isLoading ? (
         <p>Загрузка...</p>
@@ -144,8 +141,6 @@ const ShowLibrary = () => {
                   {documents.map((document) => (
                     <tr
                       key={document.id}
-                      onClick={() => handleDocumentClick(document)}
-                      className="cursor-pointer"
                     >
                       <td className="py-2 px-4 border">
                         <FaFile className="inline-block mr-2" />
@@ -174,28 +169,13 @@ const ShowLibrary = () => {
           )}
         </>
       )}
-      <button
+      {userData.id == library.userId && (
+        <button
         className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         onClick={handleUploadFile}
       >
         Загрузить файл
       </button>
-
-      {selectedDocument && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-4 rounded shadow">
-            <h3 className="text-xl font-bold mb-2">{selectedDocument.title}</h3>
-            <p className="text-gray-700">ID: {selectedDocument.id}</p>
-            <p className="text-gray-500 mb-4">{selectedDocument.contentType}</p>
-            <p className="text-gray-700">{selectedDocument.description}</p>
-            <button
-              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              onClick={closePopup}
-            >
-              Закрыть
-            </button>
-          </div>
-        </div>
       )}
 
       {showModal && (
