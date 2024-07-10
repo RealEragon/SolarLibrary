@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { FaFile } from "react-icons/fa";
+import { useParams, useNavigate } from "react-router-dom";
+import { FaFile, FaDownload } from "react-icons/fa";
+import axios from "axios";
 
 const ShowLibrary = () => {
   const { libraryId } = useParams();
@@ -12,6 +13,8 @@ const ShowLibrary = () => {
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch(`http://127.0.0.1:5161/api/document/library/${libraryId}`)
@@ -61,35 +64,57 @@ const ShowLibrary = () => {
   };
 
   const handleFileUpload = async () => {
-    console.log("УХ ЩАС КАК ОТПРАВЛЮ!!!!")
-    /*if (selectedFile) {
+    if (selectedFile) {
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+      formData.append("title", selectedFile.name);
+      formData.append("libraryId", libraryId);
+
       try {
-        const formData = new FormData();
-        formData.append('title', selectedFile.name);
-        formData.append('description', 'Загруженный файл');
-        formData.append('contentType', selectedFile.type);
-        formData.append('data', await selectedFile.stream().toArray()); // Преобразуем в массив байтов
-        formData.append('uploadDate', new Date().toISOString());
-        formData.append('libraryId', libraryId);
-  
-        const response = await fetch("http://127.0.0.1:5161/api/document/", {
-          method: "POST",
-          body: formData
+        await axios.post("http://127.0.0.1:5161/api/document", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         });
-  
-        if (response.ok) {
-          const data = await response.json();
-          console.log("Файл успешно загружен:", data);
-          setSelectedFile(null);
-          setShowModal(false);
-          // Вы можете добавить код для обработки успешной загрузки файла
-        } else {
-          throw new Error(`Ошибка загрузки файла: ${response.status} - ${response.statusText}`);
-        }
+        console.log("Файл успешно загружен!");
+        closeModal();
+        window.location.reload();
       } catch (error) {
-        console.error("Ошибка загрузки файла:", error);
+        console.log("Ошибка при загрузке файла:", error);
       }
-    }*/
+    }
+  };
+
+  const handleDownload = async (documentId) => {
+    try {
+      const response = await axios.get(`http://127.0.0.1:5161/api/document/${documentId}/download`, {
+        responseType: 'arraybuffer',
+      });
+  
+      const blob = new Blob([response.data], { type: response.headers['content-type'] });
+      const downloadUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+  
+      const contentTypeMap = {
+        'text/plain': 'txt',
+        'application/pdf': 'pdf',
+        'application/msword': 'doc',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
+      };
+  
+      const contentType = response.headers['content-type'];
+      const fileExtension = contentTypeMap[contentType] || 'bin';
+  
+      const filename = response.headers['content-disposition'] ? response.headers['content-disposition'].split('filename=')[1] : `document-${documentId}.${fileExtension}`;
+  
+      link.download = filename;
+      link.click();
+    } catch (error) {
+      console.log('Ошибка при скачивании файла:', error);
+    }
   };
 
   return (
@@ -101,7 +126,9 @@ const ShowLibrary = () => {
       ) : (
         <>
           {documents.length === 0 ? (
-            <p className="text-gray-500 text-lg">Эта библиотека не содержит никаких файлов</p>
+            <p className="text-gray-500 text-lg">
+              Эта библиотека не содержит никаких файлов
+            </p>
           ) : (
             <>
               <table className="min-w-full border border-gray-300">
@@ -110,6 +137,7 @@ const ShowLibrary = () => {
                     <th className="py-2 px-4 bg-gray-100 border">Название</th>
                     <th className="py-2 px-4 bg-gray-100 border">Тип контента</th>
                     <th className="py-2 px-4 bg-gray-100 border">Дата загрузки</th>
+                    <th className="py-2 px-4 bg-gray-100 border">Действия</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -124,27 +152,40 @@ const ShowLibrary = () => {
                         {document.title}
                       </td>
                       <td className="py-2 px-4 border">{document.contentType}</td>
-                      <td className="py-2 px-4 border">{new Date(document.uploadDate).toLocaleString()}</td>
+                      <td className="py-2 px-4 border">
+                        {new Date(document.uploadDate).toLocaleString()}
+                      </td>
+                      <td className="py-2 px-4 border">
+                      <button
+                        className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 mr-2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDownload(document.id); // Pass the documentId as an argument
+                        }}
+                      >
+                        <FaDownload />
+                      </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-
-              <button
-                className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                onClick={handleUploadFile}
-              >
-                Загрузить файл
-              </button>
             </>
           )}
         </>
       )}
+      <button
+        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        onClick={handleUploadFile}
+      >
+        Загрузить файл
+      </button>
 
       {selectedDocument && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-4 rounded shadow">
             <h3 className="text-xl font-bold mb-2">{selectedDocument.title}</h3>
+            <p className="text-gray-700">ID: {selectedDocument.id}</p>
             <p className="text-gray-500 mb-4">{selectedDocument.contentType}</p>
             <p className="text-gray-700">{selectedDocument.description}</p>
             <button

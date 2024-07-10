@@ -32,6 +32,19 @@ namespace api.Controllers
             return Ok(document);
         }
 
+        [HttpGet("{id}/download")]
+        public IActionResult DownloadFile([FromRoute] int id)
+        {
+            var document = _context.Documents.Find(id);
+
+            if (document == null)
+            {
+                return NotFound();
+            }
+
+            return File(document.Data, document.ContentType, document.Title);
+        }
+
         [HttpGet("library/{libraryId}")]
         public IActionResult GetByLibraryId([FromRoute] int libraryId)
         {
@@ -41,12 +54,28 @@ namespace api.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create([FromBody] CreateDocumentRequestDto documentDto)
+        public async Task<IActionResult> CreateAsync([FromForm]CreateDocumentRequestDto documentDto, IFormFile file)
         {
-            var documentModel = documentDto.ToDocumentFromCreateDTO();
-            _context.Documents.Add(documentModel);
-            _context.SaveChanges();
-            return CreatedAtAction(nameof(GetById), new { id = documentModel.Id }, documentModel);
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("No file provided");
+            }
+
+            using (var stream = new MemoryStream())
+            {
+                await file.CopyToAsync(stream);
+                var fileBytes = stream.ToArray();
+
+                var documentModel = documentDto.ToDocumentFromCreateDTO();
+                documentModel.Data = fileBytes;
+                documentModel.ContentType = file.ContentType;
+                documentModel.UploadDate = DateTime.UtcNow;
+
+                _context.Documents.Add(documentModel);
+                _context.SaveChanges();
+
+                return CreatedAtAction(nameof(GetById), new { id = documentModel.Id }, documentModel);
+            }
         }
     }
 }
