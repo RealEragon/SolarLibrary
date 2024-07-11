@@ -217,9 +217,15 @@ const MyLibraries = () => {
             <div className="text-center">
               <button
                 type="submit"
-                className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
+                className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded mr-4"
               >
                 Create Library
+              </button>
+              <button
+                className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded ml-4"
+                onClick={() => setShowModal(false)}
+              >
+                Cancel
               </button>
             </div>
           </form>
@@ -228,7 +234,7 @@ const MyLibraries = () => {
       )}
 
       <button className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded mt-4 ml-4" onClick={handleCreateLibrary}>
-        Новая библиотека
+        New library
       </button>
     </>
   );
