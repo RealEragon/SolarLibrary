@@ -82,7 +82,7 @@ const Libraries = () => {
           </tr>
         </thead>
         <tbody>
-          {libraries.map((item) => (
+          {libraries.filter(library => library.isPublic).map((item) => (
             <tr
               key={item.id}
               className="border-b"
