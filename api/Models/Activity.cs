@@ -28,5 +28,10 @@ namespace api.Models
 
         [ForeignKey("LibraryId")]
         public Library? Library { get; set; }
+
+        internal object? ToActivityDto()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
