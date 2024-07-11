@@ -19,6 +19,10 @@ const ShowLibrary = () => {
 
   const [showDeleteLibraryModal, setShowDeleteLibraryModal] = useState(false);
 
+  const [showActivitiesModal, setShowActivitiesModal] = useState(false);
+  const [activities, setActivities] = useState([]);
+
+
   const { userData } = useContext(AuthContext);
 
   const navigate = useNavigate();
@@ -49,6 +53,18 @@ const ShowLibrary = () => {
       });
   }, [libraryId]);
 
+  useEffect(() => {
+    fetch(`http://127.0.0.1:5161/api/activity/library/${libraryId}`)
+      .then((response) => response.json())
+      .then((data) => {
+        setActivities(data);
+        console.log(data)
+      })
+      .catch((error) => {
+        console.log("Error fetching activities:", error);
+      });
+  }, [libraryId]);
+
   const handleUploadFile = () => {
     setShowModal(true);
   };
@@ -64,12 +80,13 @@ const ShowLibrary = () => {
 
   const handleConfirmDelete = async () => {
     try {
+      const response = await axios.get(`http://127.0.0.1:5161/api/document/${selectedDocumentId}`);
+      const fileName = response.data.title;
       await axios.delete(`http://127.0.0.1:5161/api/document/${selectedDocumentId}`);
-      console.log("Документ успешно удален!");
       setShowDeleteModal(false);
       window.location.reload();
+      handleCreateActivity(`Deleted document ${fileName} by ${userData.nickname}`, userData.id, libraryId);
     } catch (error) {
-      console.log("Ошибка при удалении документа:", error);
     }
   };
 
@@ -89,7 +106,6 @@ const ShowLibrary = () => {
   const handleConfirmDeleteLibrary = async () => {
     try {
       await axios.delete(`http://127.0.0.1:5161/api/library/${libraryId}`);
-      console.log("Библиотека успешно удалена!");
       setShowDeleteLibraryModal(false);
       navigate('/libraries');
     } catch (error) {
@@ -107,16 +123,16 @@ const ShowLibrary = () => {
       formData.append("file", selectedFile);
       formData.append("title", selectedFile.name);
       formData.append("libraryId", libraryId);
-
+  
       try {
         await axios.post("http://127.0.0.1:5161/api/document", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
-        console.log("Файл успешно загружен!");
         closeModal();
         window.location.reload();
+        handleCreateActivity(`Uploaded document ${selectedFile.name} by ${userData.nikc}`, userData.id, libraryId);
       } catch (error) {
         console.log("Ошибка при загрузке файла:", error);
       }
@@ -129,6 +145,10 @@ const ShowLibrary = () => {
         responseType: 'arraybuffer',
       });
   
+      const contentDisposition = response.headers['content-disposition'];
+      const fileName = contentDisposition ? contentDisposition.split('filename=')[1] : 'document';
+      handleCreateActivity(`Downloaded document ${fileName} by ${userData.nickname}`, userData.id, libraryId);
+
       const blob = new Blob([response.data], { type: response.headers['content-type'] });
       const downloadUrl = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -146,13 +166,29 @@ const ShowLibrary = () => {
       const contentType = response.headers['content-type'];
       const fileExtension = contentTypeMap[contentType] || 'bin';
   
-      const filename = response.headers['content-disposition'] ? response.headers['content-disposition'].split('filename=')[1] : `document-${documentId}.${fileExtension}`;
+      const filename = contentDisposition ? contentDisposition.split('filename=')[1] : `document-${documentId}.${fileExtension}`;
   
       link.download = filename;
       link.click();
     } catch (error) {
       console.log('Ошибка при скачивании файла:', error);
     }
+  };
+
+  const handleCreateActivity = async (name, userId, libraryId) => {
+    try {
+      await axios.post('http://127.0.0.1:5161/api/activity', {
+        name,
+        userId,
+        libraryId,
+      });
+    } catch (error) {
+      console.log('Error creating activity:', error);
+    }
+  };
+
+  const handleShowActivities = () => {
+    setShowActivitiesModal(true);
   };
   
   if (isLoading) {
@@ -241,13 +277,22 @@ const ShowLibrary = () => {
           )}
         </>
       )}
-      {userData.id == library.userId && (
-        <button
-        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        onClick={handleUploadFile}
-      >
-        Upload document
-      </button>
+
+      {userData.id === library.userId && (
+        <div className="flex justify-between mt-4">
+          <button
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            onClick={handleUploadFile}
+          >
+            Upload document
+          </button>
+          <button
+            className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 ml-2"
+            onClick={handleShowActivities}
+          >
+            Activities
+          </button>
+        </div>
       )}
 
       {showModal && (
@@ -321,6 +366,38 @@ const ShowLibrary = () => {
           </div>
         </div>
       )}
+
+{showActivitiesModal && (
+  <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
+    <div className="bg-white rounded-lg shadow-md p-6 max-w-md">
+      <h3 className="text-2xl font-bold mb-4">Activities</h3>
+      {activities && activities.length > 0 ? (
+        <ul className="list-none mb-4">
+          {activities.map((activity) => (
+            <li key={activity.id} className="py-2 border-b border-gray-200">
+              <div className="flex justify-between">
+                <p className="text-lg">{activity.name}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div className="text-center mb-4">
+          <p className="text-lg text-gray-600">No activities found.</p>
+          <p className="text-sm text-gray-500">It looks like you don't have any activities yet.</p>
+        </div>
+      )}
+      <div className="flex justify-end">
+        <button
+          className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded"
+          onClick={() => setShowActivitiesModal(false)}
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
     </div>
   );
