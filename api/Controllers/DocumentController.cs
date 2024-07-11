@@ -77,5 +77,22 @@ namespace api.Controllers
                 return CreatedAtAction(nameof(GetById), new { id = documentModel.Id }, documentModel);
             }
         }
+
+        [HttpDelete]
+        [Route("{id}")]
+        public IActionResult Delete([FromRoute] int id)
+        {
+            var documentModel = _context.Documents.FirstOrDefault(x => x.Id == id);
+
+            if (documentModel == null)
+            {
+                return NotFound();
+            }
+
+            _context.Documents.Remove(documentModel);
+            _context.SaveChanges();
+            
+            return NoContent();
+        }
     }
 }

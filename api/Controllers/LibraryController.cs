@@ -62,5 +62,22 @@ namespace api.Controllers
             _context.SaveChanges();
             return CreatedAtAction(nameof(GetById), new { id = libraryModel.Id }, libraryModel);
         }
+
+        [HttpDelete]
+        [Route("{id}")]
+        public IActionResult Delete([FromRoute] int id)
+        {
+            var libraryModel = _context.Libraries.FirstOrDefault(x => x.Id == id);
+
+            if (libraryModel == null)
+            {
+                return NotFound();
+            }
+
+            _context.Libraries.Remove(libraryModel);
+            _context.SaveChanges();
+            
+            return NoContent();
+        }
     }
 }
